@@ -27,7 +27,7 @@ jobs:
 
       - name: ライスクレイピング実行
         run: |
-          python boat_scraper.py
+          python get_race_list_v1.py
 
       - name: 結果をアーティファクトとして保存
         uses: actions/upload-artifact@v3
