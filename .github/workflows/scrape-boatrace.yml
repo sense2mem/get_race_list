@@ -1,0 +1,57 @@
+name: scrape-boatrace
+
+on:
+  workflow_dispatch: {}        # 手動実行
+  schedule:
+    - cron: '5 21 * * *'       # UTCで指定。JST 06:05 は前日 21:05 UTC
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    # 生成物をリポジトリにコミットするなら write が必要
+    permissions:
+      contents: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'   # pipのキャッシュを有効化
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        env:
+          TZ: Asia/Tokyo
+        run: python get_race_list_v1.py
+
+      - name: Upload outputs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: outputs-${{ github.run_id }}
+          path: |
+            data/**
+            output/**
+            **/*.csv
+            **/*.json
+          retention-days: 14
+
+      # （任意）成果物をリポジトリにコミット
+      - name: Commit & push results
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(data): update scraped results [skip ci]" || echo "no changes"
+          git push
