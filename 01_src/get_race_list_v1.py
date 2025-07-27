@@ -150,6 +150,6 @@ if __name__ == '__main__':
         print(f"  {target_date} のデータを race_data_{target_date}.json に保存しました。")
 
     # 全期間をまとめて１ファイルにしたいなら、ループの外でまとめて保存
-    with open("race_data_20240727-20250726.json", 'w', encoding='utf-8') as f:
+    with open("race_data_20240808-20250726.json", 'w', encoding='utf-8') as f:
         json.dump(all_races_data, f, indent=2, ensure_ascii=False)
     print("\n全期間のデータ保存が完了しました。")
